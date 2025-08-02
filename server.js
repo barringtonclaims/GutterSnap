@@ -48,11 +48,11 @@ const upload = multer({
 });
 
 // Configure nodemailer
-const transporter = nodemailer.createTransport({  // Fixed typo: createTransport instead of createTransporter
+const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.EMAIL_USER || 'your-email@gmail.com', // You'll need to set this
-        pass: process.env.EMAIL_PASS || 'your-app-password'     // You'll need to set this
+        user: 'guttersnapp@gmail.com',
+        pass: 'GutterSnap1234!'
     }
 });
 
@@ -91,7 +91,7 @@ app.post('/submit-request', upload.fields([
         });
 
         const mailOptions = {
-            from: process.env.EMAIL_USER || 'your-email@gmail.com',
+            from: 'guttersnapp@gmail.com',
             to: 'max@barringtonclaims.com',
             subject: `New GutterSnap Request - ${address}`,
             html: `
@@ -154,5 +154,4 @@ app.use((error, req, res, next) => {
 
 app.listen(PORT, () => {
     console.log(`🏠 GutterSnap server running on http://localhost:${PORT}`);
-    console.log(`📧 Make sure to set EMAIL_USER and EMAIL_PASS environment variables for email functionality`);
 });
