@@ -300,6 +300,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 form.style.display = 'none';
                 successMessage.style.display = 'block';
                 
+                // Hide the welcome section and camera notice
+                const welcomeSection = document.querySelector('.welcome-section');
+                if (welcomeSection) {
+                    welcomeSection.style.display = 'none';
+                }
+                
                 // Smooth scroll to success message
                 successMessage.scrollIntoView({ 
                     behavior: 'smooth', 
