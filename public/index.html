@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GutterSnap - Photo Submission</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div id="desktop-message">
+            <p>For the best experience taking photos, please visit this site on your mobile device.</p>
+        </div>
+        
+        <header class="header">
+            <div class="logo">
+                <img src="logo.png" alt="GutterSnap Logo" class="logo-image">
+                <h1 class="company-name">GutterSnap<sup>™</sup></h1>
+                <p class="tagline">Why hasn't it always been this way?</p>
+            </div>
+        </header>
+
+        <section class="hero-section">
+            <h2>Empowering Homeowners</h2>
+            <p>We are your trusted local gutter experts, committed to giving you a zero-pressure experience. Simply snap photos of your home to see our firm, final pricing before you ever need to speak with us. We offer incredibly competitive everyday low pricing and the best service and warranty in the industry.</p>
+        </section>
+
+        <main class="main">
+            <div class="welcome-section">
+                <h2>Let's Get Started!</h2>
+                <p>You've already taken the first step by scanning our QR code. Now, let's capture some photos of your home so we can provide you with an accurate quote.</p>
+                <div class="camera-notice">
+                    <svg class="camera-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                    <p>Turn your phone sideways and use the widest angle lens for best results</p>
+                </div>
+            </div>
+
+            <!-- Camera Capture Mode -->
+            <div id="cameraMode" class="camera-mode" style="display: none;">
+                <div class="camera-header">
+                    <button class="back-btn" id="backToForm">← Back</button>
+                    <h3 id="photoTitle">Front of Home</h3>
+                    <span id="photoCount">1 of 9</span>
+                </div>
+                
+                <div class="camera-viewport">
+                    <video id="camera" autoplay playsinline></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <img id="preview" style="display: none;">
+                </div>
+                
+                <div class="camera-instructions">
+                    <p id="photoInstructions">Stand back to capture the entire front of your home</p>
+                </div>
+                
+                <div class="camera-controls">
+                    <button class="capture-btn" id="captureBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                    </button>
+                    <button class="next-btn" id="nextPhotoBtn" style="display: none;">
+                        Next Photo →
+                    </button>
+                </div>
+            </div>
+
+            <form id="photoForm" class="photo-form">
+                <!-- Photo Upload Sections -->
+                <div class="section">
+                    <h3>Step 1: Home Photos</h3>
+                    <p class="section-description">Capture photos from each angle of your home. You can use your camera or upload existing photos.</p>
+                    
+                    <button type="button" class="camera-start-btn" id="startCameraBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                            <circle cx="12" cy="13" r="4"></circle>
+                        </svg>
+                        Start Camera Capture
+                    </button>
+                    
+                    <p class="alternate-method">Or upload photos manually:</p>
+                    
+                    <div class="photo-grid">
+                        <div class="photo-upload-card" data-photo-type="front">
+                            <label for="front" class="photo-label">
+                                <div class="photo-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                    </svg>
+                                </div>
+                                <span>Front of Home</span>
+                                <input type="file" id="front" name="front" accept="image/*" capture="environment" required>
+                                <div class="upload-status"></div>
+                            </label>
+                        </div>
+
+                        <div class="photo-upload-card" data-photo-type="frontRightCorner">
+                            <label for="frontRightCorner" class="photo-label">
+                                <div class="photo-icon"></div>
+                                <span>Front Right Corner</span>
+                                <input type="file" id="frontRightCorner" name="frontRightCorner" accept="image/*" capture="environment" required>
+                                <div class="upload-status"></div>
+                            </label>
+                        </div>
+
+                        <div class="photo-upload-card" data-photo-type="rightSide">
+                            <label for="rightSide" class="photo-label">
+                                <div class="photo-icon"></div>
+                                <span>Right Side</span>
+                                <input type="file" id="rightSide" name="rightSide" accept="image/*" capture="environment" required>
+                                <div class="upload-status"></div>
+                            </label>
+                        </div>
+
+                        <div class="photo-upload-card" data-photo-type="rearRightCorner">
+                            <label for="rearRightCorner" class="photo-label">
+                                <div class="photo-icon"></div>
+                                <span>Rear Right Corner</span>
+                                <input type="file" id="rearRightCorner" name="rearRightCorner" accept="image/*" capture="environment" required>
+                                <div class="upload-status"></div>
+                            </label>
+                        </div>
+
+                        <div class="photo-upload-card" data-photo-type="rear">
+                            <label for="rear" class="photo-label">
+                                <div class="photo-icon"></div>
+                                <span>Rear of Home</span>
+                                <input type="file" id="rear" name="rear" accept="image/*" capture="environment" required>
+                                <div class="upload-status"></div>
+                            </label>
+                        </div>
+
+                        <div class="photo-upload-card" data-photo-type="rearLeftCorner">
+                            <label for="rearLeftCorner" class="photo-label">
+                                <div class="photo-icon"></div>
+                                <span>Rear Left Corner</span>
+                                <input type="file" id="rearLeftCorner" name="rearLeftCorner" accept="image/*" capture="environment" required>
+                                <div class="upload-status"></div>
+                            </label>
+                        </div>
+
+                        <div class="photo-upload-card" data-photo-type="leftSide">
+                            <label for="leftSide" class="photo-label">
+                                <div class="photo-icon"></div>
+                                <span>Left Side</span>
+                                <input type="file" id="leftSide" name="leftSide" accept="image/*" capture="environment" required>
+                                <div class="upload-status"></div>
+                            </label>
+                        </div>
+
+                        <div class="photo-upload-card" data-photo-type="leftFrontCorner">
+                            <label for="leftFrontCorner" class="photo-label">
+                                <div class="photo-icon"></div>
+                                <span>Left Front Corner</span>
+                                <input type="file" id="leftFrontCorner" name="leftFrontCorner" accept="image/*" capture="environment" required>
+                                <div class="upload-status"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Step 2: Gutter Color Preference</h3>
+                    <p class="section-description">Take a photo of the gutter swatch showing your preferred color or held against your existing gutters for matching:</p>
+                    
+                    <div class="photo-upload-card gutter-swatch" data-photo-type="gutterSwatch">
+                        <label for="gutterSwatch" class="photo-label">
+                            <div class="photo-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="6" y="2" width="12" height="20" rx="2"></rect>
+                                    <path d="M6 6h12"></path>
+                                    <path d="M6 10h12"></path>
+                                    <path d="M6 14h12"></path>
+                                    <path d="M6 18h12"></path>
+                                </svg>
+                            </div>
+                            <span>Gutter Color Swatch</span>
+                            <input type="file" id="gutterSwatch" name="gutterSwatch" accept="image/*" capture="environment" required>
+                            <div class="upload-status"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Step 3: Contact Information</h3>
+                    <p class="section-description">Please provide your contact details so we can send you a detailed quote:</p>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" required placeholder="(555) 123-4567">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="address">Property Address *</label>
+                            <input type="text" id="address" name="address" required placeholder="123 Main Street, City, State, ZIP">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="notes">Special Notes or Requests</label>
+                            <textarea id="notes" name="notes" rows="4" placeholder="Any additional information, special requests, or notes about your property..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submit-section">
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span class="btn-text">Submit My Request</span>
+                        <span class="btn-loading" style="display: none;">
+                            <div class="spinner"></div>
+                            Submitting...
+                        </span>
+                    </button>
+                    <p class="submit-note">Your photos and information will be sent securely to our team for quote preparation.</p>
+                </div>
+            </form>
+
+            <div id="successMessage" class="success-message" style="display: none;">
+                <div class="success-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h3>Request Submitted Successfully!</h3>
+                <p>Thank you for choosing GutterSnap. We have received your photos and information. Our team will review your submission and send you a detailed quote within 24-48 hours.</p>
+                <p><strong>What happens next?</strong></p>
+                <ul>
+                    <li>Our experts will analyze your photos</li>
+                    <li>We'll prepare a customized quote</li>
+                    <li>You'll receive an email with pricing and next steps</li>
+                </ul>
+            </div>
+
+            <!-- About Section with Dropdowns -->
+            <section class="about-section">
+                <div class="dropdown-container">
+                    <details class="info-dropdown">
+                        <summary>Learn More About Our Process</summary>
+                        <div class="dropdown-content">
+                            <p>We analyze your submitted photos using our proprietary system to generate a precise quote. Our experienced estimators review every submission to ensure accuracy. If we need additional details for a complete assessment, we'll reach out directly—no surprises. Our goal is to give you real, transparent pricing you can trust.</p>
+                        </div>
+                    </details>
+
+                    <details class="info-dropdown">
+                        <summary>Meet Our Team</summary>
+                        <div class="dropdown-content">
+                            <p>GutterSnap was founded by local professionals with over 25 years of experience in the gutter industry. Our team consists of certified installers, experienced estimators, and dedicated customer service specialists who are all committed to providing you with the best possible experience.</p>
+                        </div>
+                    </details>
+
+                    <details class="info-dropdown">
+                        <summary>Careers at GutterSnap</summary>
+                        <div class="dropdown-content">
+                            <p>Join our growing team! We're always looking for skilled installers, sales professionals, and customer service representatives who share our commitment to quality and innovation. Contact us at careers@guttersnap.com to learn about current opportunities.</p>
+                        </div>
+                    </details>
+
+                    <details class="info-dropdown">
+                        <summary>Our Warranty & Service</summary>
+                        <div class="dropdown-content">
+                            <p>We stand behind our work with the industry's best warranty: lifetime material warranty, 10-year workmanship warranty, and free annual inspections. Our everyday low pricing means you get the best value without negotiating or waiting for sales.</p>
+                        </div>
+                    </details>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 Barrington Claims Consultants - GutterSnap™. Professional gutter solutions.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
