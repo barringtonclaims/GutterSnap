@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Simple confetti effect
     function createConfetti() {
-        const colors = ['#FF7F00', '#FF4500', '#48bb78', '#ed8936', '#9f7aea'];
+        const colors = ['#FF9933', '#FF4500', '#48bb78', '#ed8936', '#9f7aea'];
         const confettiCount = 50;
         
         for (let i = 0; i < confettiCount; i++) {
