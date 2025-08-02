@@ -52,7 +52,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'guttersnapp@gmail.com',
-        pass: 'GutterSnap1234!'
+        pass: 'apuHYgkrSxtjSbws'
     }
 });
 
@@ -92,7 +92,7 @@ app.post('/submit-request', upload.fields([
 
         const mailOptions = {
             from: 'guttersnapp@gmail.com',
-            to: 'max@barringtonclaims.com',
+            to: 'guttersnapp@gmail.com',
             subject: `New GutterSnap Request - ${address}`,
             html: `
                 <h2>New GutterSnap Photo Request</h2>
