@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
         form.style.display = 'none';
         cameraMode.style.display = 'flex';
         currentPhotoIndex = 0;
+        handleOrientationChange(); // Set initial orientation class
         await startCamera();
         updatePhotoUI();
     });
@@ -54,18 +55,43 @@ document.addEventListener('DOMContentLoaded', function() {
     // Start Camera
     async function startCamera() {
         try {
-            const constraints = {
+            // First, try to get the wide-angle camera if available
+            let constraints = {
                 video: {
                     facingMode: 'environment',
                     width: { ideal: 1920 },
                     height: { ideal: 1080 }
                 }
             };
+
+            // Try to enumerate devices and find wide-angle camera
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                // On iOS devices, wide-angle cameras often have specific labels
+                const wideAngleDevice = videoDevices.find(device => 
+                    device.label.toLowerCase().includes('wide') || 
+                    device.label.toLowerCase().includes('0.5x') ||
+                    device.label.toLowerCase().includes('ultra')
+                );
+                
+                if (wideAngleDevice) {
+                    constraints.video.deviceId = { exact: wideAngleDevice.deviceId };
+                }
+            } catch (enumError) {
+                console.log('Could not enumerate devices, using default camera');
+            }
             
             stream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = stream;
             video.style.display = 'block';
             preview.style.display = 'none';
+            
+            // Set up orientation detection
+            handleOrientationChange();
+            window.addEventListener('orientationchange', handleOrientationChange);
+            window.addEventListener('resize', handleOrientationChange);
         } catch (err) {
             console.error('Error accessing camera:', err);
             alert('Unable to access camera. Please make sure you have granted camera permissions or use the manual upload option.');
@@ -80,6 +106,23 @@ document.addEventListener('DOMContentLoaded', function() {
             stream = null;
         }
         video.style.display = 'none';
+        
+        // Remove orientation listeners
+        window.removeEventListener('orientationchange', handleOrientationChange);
+        window.removeEventListener('resize', handleOrientationChange);
+    }
+    
+    // Handle orientation changes
+    function handleOrientationChange() {
+        const isLandscape = window.innerWidth > window.innerHeight;
+        
+        if (isLandscape) {
+            cameraMode.classList.add('landscape');
+            cameraMode.classList.remove('portrait');
+        } else {
+            cameraMode.classList.add('portrait');
+            cameraMode.classList.remove('landscape');
+        }
     }
     
     // Update Photo UI

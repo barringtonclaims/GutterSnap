@@ -337,6 +337,105 @@ body {
     transform: translateY(-2px);
 }
 
+/* Landscape orientation styles for camera mode */
+@media (orientation: landscape) {
+    .camera-mode.landscape {
+        flex-direction: row;
+    }
+    
+    .camera-mode.landscape .camera-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 10px 20px;
+    }
+    
+    .camera-mode.landscape .camera-viewport {
+        flex: 1;
+        margin-right: 120px; /* Space for side controls */
+    }
+    
+    .camera-mode.landscape .camera-instructions {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 120px; /* Avoid overlap with side controls */
+        background: rgba(0, 0, 0, 0.6);
+        padding: 10px 20px;
+    }
+    
+    .camera-mode.landscape .camera-controls {
+        position: absolute;
+        right: 0;
+        top: 60px; /* Below header */
+        bottom: 0;
+        width: 120px;
+        flex-direction: column;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.9);
+    }
+    
+    .camera-mode.landscape .capture-btn {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .camera-mode.landscape .next-btn {
+        padding: 20px 15px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+}
+
+/* Additional responsive adjustments for small landscape screens */
+@media (orientation: landscape) and (max-height: 500px) {
+    .camera-mode.landscape .camera-header {
+        padding: 5px 15px;
+    }
+    
+    .camera-mode.landscape .camera-header h3 {
+        font-size: 1rem;
+    }
+    
+    .camera-mode.landscape .camera-instructions {
+        padding: 5px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .camera-mode.landscape .camera-controls {
+        width: 100px;
+        padding: 15px;
+    }
+    
+    .camera-mode.landscape .capture-btn {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .camera-mode.landscape .capture-btn svg {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+/* Visual indicator for portrait mode */
+.camera-mode.portrait .camera-instructions::after {
+    content: " 📱 Rotate your device for better coverage.";
+    color: #FF9933;
+    font-weight: 600;
+    display: block;
+    margin-top: 10px;
+}
+
+/* Hide rotation reminder in landscape */
+.camera-mode.landscape .camera-instructions::after {
+    display: none;
+}
+
 /* Camera Start Button */
 .camera-start-btn {
     width: 100%;
@@ -439,11 +538,76 @@ body {
     height: 40px;
     margin: 0 auto 10px;
     color: #FF9933;
+    padding: 8px; /* Add padding to ensure arrows are visible */
 }
 
 .photo-icon svg {
     width: 100%;
     height: 100%;
+}
+
+/* Directional photo icons */
+.photo-icon {
+    position: relative;
+    overflow: visible;
+}
+
+/* Arrow styles for directional icons */
+.photo-icon[class*="photo-icon-"]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border: solid #FF9933;
+    border-width: 0 4px 4px 0;
+    padding: 8px;
+    transition: all 0.3s ease;
+}
+
+/* Front (arrow pointing down) */
+.photo-icon-front::after {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* Front Right (arrow pointing to lower right) */
+.photo-icon-front-right::after {
+    transform: translate(-50%, -50%) rotate(0deg);
+}
+
+/* Right (arrow pointing right) */
+.photo-icon-right::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* Rear Right (arrow pointing to upper right) */
+.photo-icon-rear-right::after {
+    transform: translate(-50%, -50%) rotate(-90deg);
+}
+
+/* Rear (arrow pointing up) */
+.photo-icon-rear::after {
+    transform: translate(-50%, -50%) rotate(-135deg);
+}
+
+/* Rear Left (arrow pointing to upper left) */
+.photo-icon-rear-left::after {
+    transform: translate(-50%, -50%) rotate(180deg);
+}
+
+/* Left (arrow pointing left) */
+.photo-icon-left::after {
+    transform: translate(-50%, -50%) rotate(135deg);
+}
+
+/* Left Front (arrow pointing to lower left) */
+.photo-icon-left-front::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+/* Hover effect for directional icons */
+.photo-upload-card:hover .photo-icon[class*="photo-icon-"]::after {
+    border-color: #FF4500;
+    padding: 10px;
 }
 
 .photo-label span {
