@@ -423,4 +423,37 @@ document.addEventListener('DOMContentLoaded', function() {
         section.style.transition = 'all 0.6s ease';
         observer.observe(section);
     });
+    
+    // Fix for mobile dropdowns
+    const dropdowns = document.querySelectorAll('.header-dropdown');
+    dropdowns.forEach(dropdown => {
+        const summary = dropdown.querySelector('summary');
+        const content = dropdown.querySelector('.dropdown-content');
+        
+        // Add touch event handling for better mobile support
+        summary.addEventListener('touchstart', function(e) {
+            // Prevent default to avoid double-tap issues
+            e.preventDefault();
+            
+            // Toggle the dropdown
+            if (dropdown.hasAttribute('open')) {
+                dropdown.removeAttribute('open');
+            } else {
+                // Close other dropdowns
+                dropdowns.forEach(d => {
+                    if (d !== dropdown) {
+                        d.removeAttribute('open');
+                    }
+                });
+                dropdown.setAttribute('open', '');
+            }
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!dropdown.contains(e.target)) {
+                dropdown.removeAttribute('open');
+            }
+        });
+    });
 });
