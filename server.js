@@ -1,4 +1,7 @@
-require('dotenv').config();
+// Only load dotenv in development
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 const express = require('express');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
@@ -51,8 +54,8 @@ const upload = multer({
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'guttersnapp@gmail.com',
-        pass: 'apuhygkrsxtjsbws'  // App password without spaces
+        user: process.env.EMAIL_USER || 'guttersnapp@gmail.com',
+        pass: process.env.EMAIL_PASS || 'apuhygkrsxtjsbws'  // App password without spaces
     }
 });
 
@@ -74,8 +77,8 @@ app.get('/', (req, res) => {
 app.get('/test-email', async (req, res) => {
     try {
         const testMailOptions = {
-            from: 'guttersnapp@gmail.com',
-            to: 'guttersnapp@gmail.com',
+            from: process.env.EMAIL_USER || 'guttersnapp@gmail.com',
+            to: process.env.EMAIL_USER || 'guttersnapp@gmail.com',
             subject: 'GutterSnap Email Test',
             text: 'This is a test email to verify the email configuration is working correctly.',
             html: '<h2>GutterSnap Email Test</h2><p>This is a test email to verify the email configuration is working correctly.</p>'
@@ -123,8 +126,8 @@ app.post('/submit-request', upload.fields([
         });
 
         const mailOptions = {
-            from: 'guttersnapp@gmail.com',
-            to: 'guttersnapp@gmail.com',
+            from: process.env.EMAIL_USER || 'guttersnapp@gmail.com',
+            to: process.env.EMAIL_USER || 'guttersnapp@gmail.com',
             subject: `New GutterSnap Request - ${address}`,
             html: `
                 <h2>New GutterSnap Photo Request</h2>
