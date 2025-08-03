@@ -52,13 +52,45 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'guttersnapp@gmail.com',
-        pass: 'apuHYgkrSxtjSbws'
+        pass: 'apuhygkrsxtjsbws'  // App password without spaces
+    }
+});
+
+// Verify transporter configuration
+transporter.verify(function(error, success) {
+    if (error) {
+        console.error('❌ Email configuration error:', error);
+    } else {
+        console.log('✅ Email server is ready to send messages');
     }
 });
 
 // Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Test email endpoint
+app.get('/test-email', async (req, res) => {
+    try {
+        const testMailOptions = {
+            from: 'guttersnapp@gmail.com',
+            to: 'guttersnapp@gmail.com',
+            subject: 'GutterSnap Email Test',
+            text: 'This is a test email to verify the email configuration is working correctly.',
+            html: '<h2>GutterSnap Email Test</h2><p>This is a test email to verify the email configuration is working correctly.</p>'
+        };
+        
+        await transporter.sendMail(testMailOptions);
+        res.json({ success: true, message: 'Test email sent successfully!' });
+    } catch (error) {
+        console.error('Test email error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to send test email',
+            error: error.message 
+        });
+    }
 });
 
 // Handle form submission with photos
@@ -137,8 +169,22 @@ app.post('/submit-request', upload.fields([
         res.json({ success: true, message: 'Request submitted successfully!' });
 
     } catch (error) {
-        console.error('Error processing request:', error);
-        res.status(500).json({ success: false, message: 'Error processing request. Please try again.' });
+        console.error('❌ Error processing request:', error);
+        console.error('Error details:', {
+            message: error.message,
+            code: error.code,
+            command: error.command
+        });
+        
+        // Send more specific error message
+        let errorMessage = 'Error processing request. Please try again.';
+        if (error.code === 'EAUTH') {
+            errorMessage = 'Email authentication failed. Please check email configuration.';
+        } else if (error.code === 'ESOCKET') {
+            errorMessage = 'Network error. Please check internet connection.';
+        }
+        
+        res.status(500).json({ success: false, message: errorMessage });
     }
 });
 
