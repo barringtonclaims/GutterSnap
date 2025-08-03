@@ -37,13 +37,90 @@ body {
 }
 
 .header {
-    text-align: center;
-    padding: 20px 0;
+    padding: 20px 40px;
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     margin-bottom: 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     animation: slideDown 0.6s ease-out;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.header-nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.header-dropdown {
+    position: relative;
+}
+
+.header-dropdown summary {
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    color: #4a5568;
+    transition: all 0.3s ease;
+    list-style: none;
+    user-select: none;
+}
+
+.header-dropdown summary::-webkit-details-marker {
+    display: none;
+}
+
+.header-dropdown summary:hover {
+    background: rgba(255, 153, 51, 0.1);
+    color: #FF9933;
+}
+
+.header-dropdown[open] summary {
+    background: rgba(255, 153, 51, 0.1);
+    color: #FF9933;
+}
+
+.header-dropdown .dropdown-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 10px;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    min-width: 300px;
+    max-width: 400px;
+    z-index: 1000;
+    animation: fadeInDown 0.3s ease;
+}
+
+.header-dropdown .dropdown-content h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #2d3748;
+}
+
+.header-dropdown .dropdown-content p {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.header-dropdown .dropdown-content ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.header-dropdown .dropdown-content li {
+    margin-bottom: 5px;
 }
 
 .logo {
@@ -66,7 +143,7 @@ body {
 }
 
 .company-name {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 700;
     color: #FF9933;
     margin: 0;
@@ -89,37 +166,14 @@ body {
     margin-bottom: 0;
 }
 
-.hero-section {
-    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-    padding: 40px;
-    border-radius: 15px;
-    margin-bottom: 40px;
-    text-align: center;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-}
-
-.hero-section h2 {
-    font-size: 2rem;
-    color: #2d3748;
-    margin-bottom: 20px;
-}
-
-.hero-section p {
-    font-size: 1.1rem;
-    color: #4a5568;
-    max-width: 800px;
-    margin: 0 auto 20px;
-    line-height: 1.8;
-}
-
 .hero-highlight {
     font-size: 1.05rem;
     color: #2d3748;
-    background: rgba(255, 127, 0, 0.1);
+    background: rgba(255, 153, 51, 0.1);
     padding: 15px 20px;
     border-radius: 10px;
     border-left: 4px solid #FF9933;
-    margin-top: 20px;
+    margin-top: 10px;
     font-weight: 500;
 }
 
@@ -662,6 +716,17 @@ body {
     }
 }
 
+@keyframes fadeInDown {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 @keyframes slideUp {
     from {
         opacity: 0;
@@ -698,6 +763,24 @@ body {
         padding: 15px 20px;
     }
     
+    .header-content {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .header-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .header-dropdown .dropdown-content {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        max-width: none;
+        min-width: auto;
+    }
+    
     .logo {
         flex-direction: column;
         text-align: center;
@@ -721,14 +804,6 @@ body {
     .tagline {
         font-size: 1rem;
         text-align: center;
-    }
-    
-    .hero-section {
-        padding: 30px 20px;
-    }
-    
-    .hero-section h2 {
-        font-size: 1.5rem;
     }
     
     .hero-highlight {
