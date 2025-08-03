@@ -4,24 +4,27 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/submit-request",
-      "dest": "/server.js"
+      "dest": "/server.js",
+      "methods": ["POST", "OPTIONS"]
     },
     {
       "src": "/test-email",
-      "dest": "/server.js"
+      "dest": "/server.js",
+      "methods": ["GET"]
     },
     {
       "src": "/(.*)",
-      "dest": "/public/$1"
+      "dest": "/server.js"
     }
-  ]
+  ],
+  "functions": {
+    "server.js": {
+      "maxDuration": 30
+    }
+  }
 }

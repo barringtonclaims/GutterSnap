@@ -18,23 +18,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
-}
-
 // Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-        const timestamp = Date.now();
-        const originalName = file.originalname.replace(/\s+/g, '_');
-        cb(null, `${timestamp}-${originalName}`);
-    }
-});
+// Use memory storage for Vercel compatibility
+const storage = process.env.VERCEL 
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+        destination: function (req, file, cb) {
+            // Create uploads directory if it doesn't exist (local only)
+            const uploadsDir = path.join(__dirname, 'uploads');
+            if (!fs.existsSync(uploadsDir)) {
+                fs.mkdirSync(uploadsDir);
+            }
+            cb(null, 'uploads/');
+        },
+        filename: function (req, file, cb) {
+            const timestamp = Date.now();
+            const originalName = file.originalname.replace(/\s+/g, '_');
+            cb(null, `${timestamp}-${originalName}`);
+        }
+    });
 
 const upload = multer({ 
     storage: storage,
@@ -118,11 +120,22 @@ app.post('/submit-request', upload.fields([
 
         Object.keys(files).forEach(fieldName => {
             const file = files[fieldName][0];
-            attachments.push({
-                filename: `${fieldName}-${file.filename}`,
-                path: file.path
-            });
-            photosList += `${fieldName}: ${file.filename}\n`;
+            
+            if (process.env.VERCEL) {
+                // For Vercel, use buffer from memory
+                attachments.push({
+                    filename: `${fieldName}-${file.originalname}`,
+                    content: file.buffer
+                });
+            } else {
+                // For local development, use file path
+                attachments.push({
+                    filename: `${fieldName}-${file.filename}`,
+                    path: file.path
+                });
+            }
+            
+            photosList += `${fieldName}: ${file.originalname}\n`;
         });
 
         const mailOptions = {
@@ -159,15 +172,17 @@ app.post('/submit-request', upload.fields([
 
         await transporter.sendMail(mailOptions);
 
-        // Clean up uploaded files after sending email
-        setTimeout(() => {
-            Object.keys(files).forEach(fieldName => {
-                const filePath = files[fieldName][0].path;
-                fs.unlink(filePath, (err) => {
-                    if (err) console.error('Error deleting file:', err);
+        // Clean up uploaded files after sending email (local development only)
+        if (!process.env.VERCEL) {
+            setTimeout(() => {
+                Object.keys(files).forEach(fieldName => {
+                    const filePath = files[fieldName][0].path;
+                    fs.unlink(filePath, (err) => {
+                        if (err) console.error('Error deleting file:', err);
+                    });
                 });
-            });
-        }, 5000); // Delete after 5 seconds
+            }, 5000); // Delete after 5 seconds
+        }
 
         res.json({ success: true, message: 'Request submitted successfully!' });
 
