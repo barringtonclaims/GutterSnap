@@ -216,6 +216,14 @@ app.use((error, req, res, next) => {
     res.status(500).json({ success: false, message: error.message });
 });
 
-app.listen(PORT, () => {
-    console.log(`🏠 GutterSnap server running on http://localhost:${PORT}`);
-});
+// For Vercel, export the Express app
+// For local development, start the server
+if (process.env.VERCEL) {
+    // Export for Vercel
+    module.exports = app;
+} else {
+    // Start server locally
+    app.listen(PORT, () => {
+        console.log(`🏠 GutterSnap server running on http://localhost:${PORT}`);
+    });
+}

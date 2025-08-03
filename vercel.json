@@ -1,29 +1,13 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/submit-request",
-      "dest": "/server.js",
-      "methods": ["POST", "OPTIONS"]
-    },
-    {
-      "src": "/test-email",
-      "dest": "/server.js",
-      "methods": ["GET"]
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/server.js"
+      "source": "/(.*)",
+      "destination": "/api"
     }
   ],
   "functions": {
-    "server.js": {
+    "api/index.js": {
       "maxDuration": 30
     }
   }
