@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Login - GutterSnap Chicago</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #FFF5ED 0%, #ffffff 100%);
+            padding: 20px;
+        }
+
+        .login-box {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 50px 40px;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .login-logo img {
+            width: 60px;
+            height: 60px;
+        }
+
+        .login-logo h1 {
+            font-size: 2rem;
+            color: #EE9844;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .login-header h2 {
+            font-size: 1.5rem;
+            color: #333;
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-field label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-field input {
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-field input:focus {
+            outline: none;
+            border-color: #EE9844;
+            box-shadow: 0 0 0 3px rgba(238, 152, 68, 0.1);
+        }
+
+        .login-btn {
+            background: #EE9844;
+            color: #ffffff;
+            border: none;
+            padding: 16px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            background: #D17A2F;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(238, 152, 68, 0.3);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .password-reset-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .password-reset-section p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .reset-link {
+            color: #EE9844;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .reset-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Change Password Form (hidden by default) */
+        .change-password-box {
+            display: none;
+        }
+
+        .change-password-box.active {
+            display: block;
+        }
+
+        .password-requirements {
+            background: #f9f9f9;
+            border-left: 3px solid #EE9844;
+            padding: 12px 15px;
+            margin: 15px 0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .password-requirements ul {
+            margin: 5px 0 0 20px;
+            padding: 0;
+        }
+
+        .password-requirements li {
+            margin: 3px 0;
+        }
+
+        .back-to-login {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-to-login a {
+            color: #EE9844;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-to-login a:hover {
+            text-decoration: underline;
+        }
+
+        /* Dashboard (shown after login) */
+        .dashboard {
+            display: none;
+            min-height: 100vh;
+            background: #f5f5f5;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .dashboard-header {
+            background: #ffffff;
+            padding: 20px 40px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.8rem;
+            color: #333;
+            margin: 0;
+        }
+
+        .logout-btn {
+            background: #666;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #444;
+        }
+
+        .dashboard-content {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .welcome-card h2 {
+            font-size: 2rem;
+            color: #333;
+            margin: 0 0 10px 0;
+        }
+
+        .welcome-card p {
+            color: #666;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .info-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-card h3 {
+            font-size: 1.3rem;
+            color: #EE9844;
+            margin: 0 0 15px 0;
+        }
+
+        .info-card p {
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .login-box {
+                padding: 40px 30px;
+            }
+
+            .dashboard-header {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .dashboard-content {
+                padding: 0 15px;
+            }
+
+            .welcome-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-box" id="loginBox">
+            <div class="login-header">
+                <div class="login-logo">
+                    <img src="logo.png" alt="GutterSnap Logo">
+                    <h1>GutterSnap</h1>
+                </div>
+                <h2>Owner Portal</h2>
+                <p>Sign in to access your dashboard</p>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <form class="login-form" id="loginForm">
+                <div class="form-field">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required autocomplete="email">
+                </div>
+
+                <div class="form-field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="password-reset-section">
+                <p>First time logging in or need to change your password?</p>
+                <a href="#" class="reset-link" id="showResetForm">Request Password Reset</a>
+            </div>
+        </div>
+
+        <!-- Password Reset Request Box -->
+        <div class="login-box change-password-box" id="resetBox">
+            <div class="login-header">
+                <h2>Reset Password</h2>
+                <p>Enter your email to receive a password reset link</p>
+            </div>
+
+            <div id="resetAlertContainer"></div>
+
+            <form class="login-form" id="resetForm">
+                <div class="form-field">
+                    <label for="resetEmail">Email Address</label>
+                    <input type="email" id="resetEmail" name="resetEmail" required>
+                </div>
+
+                <button type="submit" class="login-btn" id="resetBtn">
+                    Send Reset Link
+                </button>
+            </form>
+
+            <div class="back-to-login">
+                <a href="#" id="backToLogin">← Back to Login</a>
+            </div>
+        </div>
+
+        <!-- Change Password Box (accessed via email link) -->
+        <div class="login-box change-password-box" id="changePasswordBox">
+            <div class="login-header">
+                <h2>Set New Password</h2>
+                <p>Create a secure password for your account</p>
+            </div>
+
+            <div id="changeAlertContainer"></div>
+
+            <div class="password-requirements">
+                <strong>Password Requirements:</strong>
+                <ul>
+                    <li>At least 8 characters long</li>
+                    <li>Include uppercase and lowercase letters</li>
+                    <li>Include at least one number</li>
+                    <li>Include at least one special character (!@#$%^&*)</li>
+                </ul>
+            </div>
+
+            <form class="login-form" id="changePasswordForm">
+                <input type="hidden" id="resetToken" name="token">
+                
+                <div class="form-field">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" name="newPassword" required autocomplete="new-password">
+                </div>
+
+                <div class="form-field">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password">
+                </div>
+
+                <button type="submit" class="login-btn" id="changePasswordBtn">
+                    Update Password
+                </button>
+            </form>
+
+            <div class="back-to-login">
+                <a href="#" id="backToLoginFromChange">← Back to Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard (shown after successful login) -->
+    <div class="dashboard" id="dashboard">
+        <div class="dashboard-header">
+            <h1>GutterSnap Chicago - Owner Dashboard</h1>
+            <button class="logout-btn" id="logoutBtn">Sign Out</button>
+        </div>
+
+        <div class="dashboard-content">
+            <div class="welcome-card">
+                <h2 id="welcomeMessage">Welcome back!</h2>
+                <p>You're successfully logged into the GutterSnap Chicago owner portal.</p>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card" style="background: linear-gradient(135deg, #FFF5ED 0%, #ffffff 100%); border: 2px solid #EE9844; cursor: pointer;" onclick="window.location.href='quote-calculator.html'">
+                    <h3 style="color: #EE9844;">Create Quote</h3>
+                    <p>Generate a professional quote for customers with our interactive pricing calculator.</p>
+                    <a href="quote-calculator.html" style="display: inline-block; margin-top: 15px; background: #EE9844; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Open Calculator →</a>
+                </div>
+
+                <div class="info-card" style="cursor: pointer;" onclick="window.location.href='quote-history.html'">
+                    <h3>Quote History</h3>
+                    <p>View all quotes you've created, check their status, and access signed contracts.</p>
+                    <a href="quote-history.html" style="display: inline-block; margin-top: 15px; background: #666; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">View All Quotes →</a>
+                </div>
+
+                <div class="info-card">
+                    <h3>Account Settings</h3>
+                    <p>Need to update your password? <a href="#" id="changePasswordLink" style="color: #EE9844; text-decoration: none; font-weight: 500;">Click here</a> to request a password reset email.</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>Support</h3>
+                    <p>If you need assistance, please contact the technical team at <a href="mailto:guttersnapp@gmail.com" style="color: #EE9844; text-decoration: none;">guttersnapp@gmail.com</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="ownerlogin.js"></script>
+</body>
+</html>
+

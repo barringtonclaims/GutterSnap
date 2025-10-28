@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accept Quote - GutterSnap Chicago</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #FFF5ED 0%, #ffffff 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .acceptance-container {
+            max-width: 900px;
+            margin: 40px auto;
+        }
+
+        .logo-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-header img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+        }
+
+        .logo-header h1 {
+            font-size: 2.5rem;
+            color: #EE9844;
+            margin: 0;
+        }
+
+        .quote-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #EE9844;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .card-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+        }
+
+        .card-header p {
+            margin: 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card-body {
+            padding: 40px;
+        }
+
+        .quote-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .quote-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .quote-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            color: #EE9844;
+            font-size: 1.4rem;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #EE9844;
+        }
+
+        .option-display {
+            background: #f9f9f9;
+            border: 2px solid #EE9844;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .option-display h3 {
+            color: #EE9844;
+            margin: 0 0 15px 0;
+        }
+
+        .procedure-list {
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .procedure-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .procedure-list li:last-child {
+            border-bottom: none;
+        }
+
+        .price-display {
+            background: #E8F5E9;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            margin-top: 20px;
+        }
+
+        .price-display .total {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2E7D32;
+            text-align: center;
+        }
+
+        .financing-section {
+            background: #FFF5ED;
+            border: 2px solid #EE9844;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .financing-table {
+            width: 100%;
+            margin: 15px 0;
+            border-collapse: collapse;
+        }
+
+        .financing-table th {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 2px solid #EE9844;
+            color: #333;
+        }
+
+        .financing-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .financing-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .signature-section {
+            margin: 30px 0;
+            padding: 30px;
+            background: #f9f9f9;
+            border-radius: 12px;
+        }
+
+        .signature-pad-container {
+            border: 2px solid #EE9844;
+            border-radius: 8px;
+            background: #ffffff;
+            margin: 15px 0;
+        }
+
+        #signaturePad {
+            width: 100%;
+            height: 200px;
+            cursor: crosshair;
+        }
+
+        .signature-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-clear {
+            background: #666;
+            color: #ffffff;
+        }
+
+        .btn-clear:hover {
+            background: #444;
+        }
+
+        .signature-preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: #E8F5E9;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .signature-preview.active {
+            display: block;
+        }
+
+        .signature-preview img {
+            max-width: 200px;
+            border: 1px solid #4CAF50;
+            border-radius: 4px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #4CAF50;
+            color: #ffffff;
+            border: none;
+            padding: 18px 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: #388E3C;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .financing-btn {
+            width: 100%;
+            background: #2196F3;
+            color: #ffffff;
+            border: none;
+            padding: 16px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .financing-btn:hover {
+            background: #1976D2;
+        }
+
+        .decline-btn {
+            width: 100%;
+            background: #666;
+            color: #ffffff;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .decline-btn:hover {
+            background: #444;
+        }
+
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 25px 20px;
+            }
+
+            #signaturePad {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="acceptance-container">
+        <div class="logo-header">
+            <img src="logo.png" alt="GutterSnap Logo">
+            <h1>GutterSnap</h1>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <!-- Quote Content -->
+        <div id="quoteContent" class="quote-card">
+            <div class="card-header">
+                <h2>Review & Accept Your Quote</h2>
+                <p id="quoteSubheader">Please review and sign below</p>
+            </div>
+
+            <div class="card-body">
+                <div class="quote-info" id="quoteInfo"></div>
+
+                <h3 class="section-title">Selected Option</h3>
+                <div id="selectedOptionDisplay"></div>
+
+                <h3 class="section-title">Financing Options</h3>
+                <div class="financing-section">
+                    <h4 style="margin: 0 0 15px 0; color: #333;">Flexible Payment Plans Available</h4>
+                    <div id="financingTable"></div>
+                    <p style="font-size: 0.85rem; color: #999; margin: 15px 0 0 0;">
+                        *Subject to credit approval. Interest rates and terms may vary based on creditworthiness.
+                    </p>
+                </div>
+
+                <form id="acceptanceForm" class="acceptance-form">
+                    <h3 class="section-title">Signature Required</h3>
+                    
+                    <div class="signature-section">
+                        <label style="font-weight: 600; color: #333; display: block; margin-bottom: 10px;">
+                            Sign below with your mouse or finger *
+                        </label>
+                        <div class="signature-pad-container">
+                            <canvas id="signaturePad"></canvas>
+                        </div>
+                        <div class="signature-controls">
+                            <button type="button" class="btn btn-clear" id="clearSignature">Clear Signature</button>
+                        </div>
+                        <div class="signature-preview" id="signaturePreview">
+                            <p style="margin: 0 0 10px 0; font-weight: 600; color: #2E7D32;">Signature captured</p>
+                            <img id="signatureImage" alt="Your signature">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customerName">Printed Name *</label>
+                        <input type="text" id="customerName" required readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signatureDate">Date</label>
+                        <input type="text" id="signatureDate" readonly>
+                    </div>
+
+                    <div class="checkbox-group" style="margin: 30px 0;">
+                        <input type="checkbox" id="acceptTerms" required>
+                        <label for="acceptTerms" style="line-height: 1.6;">
+                            I have reviewed and agree to the scope of work described above. I authorize GutterSnap Chicago to proceed with the installation as specified in this quote. I understand this is a binding agreement and the quote is valid for 30 days from the date issued.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                        Accept Quote & E-Sign Contract
+                    </button>
+
+                    <button type="button" class="financing-btn" id="financingBtn">
+                        I'm Interested in Financing - Send Me Details
+                    </button>
+
+                    <button type="button" class="decline-btn" id="declineBtn">
+                        Not Interested Right Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="accept-quote-enhanced.js"></script>
+</body>
+</html>
+
+
