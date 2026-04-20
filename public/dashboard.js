@@ -250,6 +250,7 @@ function renderLeadCard(lead) {
         const portalLink = q.portalLink || `/my-quote.html?id=${q.id}`;
         actions += `<a class="btn btn-primary" href="${portalLink}" target="_blank">View quote</a>`;
         actions += `<button class="btn btn-secondary" onclick="copyCustomerLink('${encodeURIComponent(portalLink)}')">Copy customer link</button>`;
+        actions += `<button class="btn btn-secondary" onclick="textCustomer('${encodeURIComponent(portalLink)}','${encodeURIComponent(lead.name || '')}','${encodeURIComponent(lead.phone || '')}')">Text customer</button>`;
         if (String(q.status || '').toLowerCase() !== 'accepted') {
             actions += `<button class="btn btn-warning" onclick="resendQuote('${q.id}')">Resend to customer</button>`;
         }
@@ -382,6 +383,18 @@ async function confirmSchedule() {
         console.error('Error scheduling:', error);
         alert('Error scheduling customer. Please try again.');
     }
+}
+
+function textCustomer(encodedUrl, encodedName, encodedPhone) {
+    const url = decodeURIComponent(encodedUrl);
+    const fullUrl = url.startsWith('http') ? url : (window.location.origin + url);
+    if (!window.SmsCompanion) return alert('SMS helper not loaded. Refresh the page.');
+    SmsCompanion.open({
+        ownerName:     currentOwner ? currentOwner.name : '',
+        customerName:  decodeURIComponent(encodedName || ''),
+        customerPhone: decodeURIComponent(encodedPhone || ''),
+        portalLink:    fullUrl
+    });
 }
 
 function copyCustomerLink(encodedUrl) {

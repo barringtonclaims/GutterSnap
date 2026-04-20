@@ -446,7 +446,23 @@ app.post('/api/quotes/create', express.json(), async (req, res) => {
             await airtableService.appendQuoteInternalNote(result.recordId, `Failed to email customer: ${emailError.message}`);
         }
 
-        res.json({ success: true, quoteId: result.quoteId, message: 'Quote created and sent successfully' });
+        // Build a signed portal link + owner first name so the client can show
+        // a "companion text message" next to the success state. Keeps link
+        // generation consistent with what we put in the customer email.
+        const portalLink = quoteLinks.buildPortalUrl(
+            baseUrlFor(req), result.quoteId, quote.customer.email
+        );
+        const ownerFullName = await getOwnerDisplayName(quote.createdBy);
+
+        res.json({
+            success: true,
+            quoteId: result.quoteId,
+            portalLink,
+            ownerName: ownerFullName,
+            customerPhone: quote.customer.phone,
+            customerName: quote.customer.name,
+            message: 'Quote created and sent successfully'
+        });
     } catch (error) {
         console.error('❌ Error creating quote:', error);
         res.status(500).json({ success: false, message: 'Error creating quote' });

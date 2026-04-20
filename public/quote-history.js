@@ -58,9 +58,13 @@ function renderQuotes() {
         const status = q.status || 'Draft';
         const s = normStatus(status);
 
+        const custName  = q.customer?.name || '';
+        const custPhone = q.customer?.phone || '';
+        const canText   = s !== 'declined';
+
         html += `<tr>
             <td><strong>${q.quoteId}</strong></td>
-            <td>${q.customer?.name || ''}</td>
+            <td>${custName}</td>
             <td>${q.customer?.address || ''}</td>
             <td>$${Number(displayTotal).toFixed(2)}</td>
             <td>${date}</td>
@@ -68,6 +72,7 @@ function renderQuotes() {
             <td>
                 <a href="/my-quote.html?id=${q.quoteId}" target="_blank" class="action-btn btn-view">View</a>
                 ${s === 'accepted' ? `<a href="/api/quotes/contract-pdf/${q.quoteId}" target="_blank" class="action-btn btn-view">Contract</a>` : ''}
+                ${canText ? `<button onclick="textCustomerForQuote('${q.quoteId}','${encodeURIComponent(custName)}','${encodeURIComponent(custPhone)}')" class="action-btn btn-view">Text</button>` : ''}
                 ${(s === 'sent' || s === 'draft' || s === 'expired') ? `<button onclick="resendQuote('${q.quoteId}')" class="action-btn btn-resend">Resend</button>` : ''}
             </td>
         </tr>`;
@@ -85,6 +90,17 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
         renderQuotes();
     });
 });
+
+function textCustomerForQuote(quoteId, encodedName, encodedPhone) {
+    if (!window.SmsCompanion) return alert('SMS helper not loaded. Refresh the page.');
+    const portalLink = `${window.location.origin}/my-quote.html?id=${quoteId}`;
+    SmsCompanion.open({
+        ownerName:     localStorage.getItem('ownerName') || '',
+        customerName:  decodeURIComponent(encodedName || ''),
+        customerPhone: decodeURIComponent(encodedPhone || ''),
+        portalLink
+    });
+}
 
 async function resendQuote(quoteId) {
     if (!confirm('Resend this quote to the customer?')) return;
@@ -105,5 +121,13 @@ function showError(message) {
     document.getElementById('quotesContainer').innerHTML = `
         <div class="empty-state"><h3>Error</h3><p>${message}</p></div>`;
 }
+
+// Prime owner name for the SMS companion (non-blocking).
+fetch('/api/owner/verify', { credentials: 'same-origin' })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { if (d && d.success && d.owner && d.owner.name) {
+        localStorage.setItem('ownerName', d.owner.name);
+    }})
+    .catch(() => {});
 
 loadQuotes();

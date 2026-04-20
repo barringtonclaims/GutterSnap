@@ -262,12 +262,29 @@ async function sendQuote(quoteData) {
         const result = await response.json();
         
         if (result.success) {
-            showAlert('success', `Quote sent successfully to ${quoteData.customer.email}! Quote ID: ${result.quoteId}`);
-            // Reset form after a delay
+            showAlert(
+                'success',
+                `Quote sent to ${quoteData.customer.email} (ID ${result.quoteId}). ` +
+                `A companion text message is ready to copy — paste it into Messages to give ${quoteData.customer.name.split(' ')[0]} a quick heads up.`
+            );
+
+            // Open the SMS companion so the owner can copy/paste a follow-up
+            // text to the customer with the same portal link we just emailed.
+            if (window.SmsCompanion) {
+                SmsCompanion.open({
+                    ownerName: window.__OWNER_NAME__ || result.ownerName || '',
+                    customerName: result.customerName || quoteData.customer.name,
+                    customerPhone: result.customerPhone || quoteData.customer.phone,
+                    portalLink: result.portalLink ||
+                        `${window.location.origin}/my-quote.html?id=${result.quoteId}`
+                });
+            }
+
+            // Reset the form after the modal is opened (modal is independent).
             setTimeout(() => {
                 form.reset();
                 renderQuote();
-            }, 3000);
+            }, 500);
         } else {
             showAlert('error', result.message || 'Failed to send quote. Please try again.');
         }
@@ -370,7 +387,9 @@ renderQuote();
         const data = await res.json();
         if (!data.success) throw new Error('Not authenticated');
         window.__OWNER_EMAIL__ = data.owner.email;
+        window.__OWNER_NAME__ = data.owner.name || '';
         localStorage.setItem('ownerEmail', data.owner.email);
+        if (data.owner.name) localStorage.setItem('ownerName', data.owner.name);
     } catch (e) {
         showAlert('error', 'You must be logged in to create quotes. Redirecting to login…');
         setTimeout(() => { window.location.href = 'ownerlogin.html'; }, 1500);
