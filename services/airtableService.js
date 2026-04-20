@@ -724,10 +724,13 @@ async function appendQuoteInternalNote(recordId, line) {
 
 async function getAllQuotesByOwner(ownerEmail) {
     try {
+        // Note: the Quotes table doesn't have a "Created Date" field — the
+        // closest equivalent is "Sent Date" (and Airtable's CREATED_TIME()
+        // is available via formula if we ever need a true creation stamp).
         const records = await base(TABLES.QUOTES)
             .select({
                 filterByFormula: `{Created By} = '${ownerEmail}'`,
-                sort: [{ field: 'Created Date', direction: 'desc' }]
+                sort: [{ field: 'Sent Date', direction: 'desc' }]
             })
             .all();
 
