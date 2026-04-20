@@ -107,11 +107,13 @@ function showAlert(type, message) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Load quote
+let linkToken = null;
+
 async function loadQuote() {
     const urlParams = new URLSearchParams(window.location.search);
     const quoteId = urlParams.get('id');
     selectedOption = urlParams.get('option');
+    linkToken = urlParams.get('t');
 
     if (!quoteId) {
         showAlert('error', 'Invalid quote link. Please check the URL and try again.');
@@ -122,13 +124,33 @@ async function loadQuote() {
         const response = await fetch(`/api/quotes/${quoteId}`);
         const result = await response.json();
 
-        if (result.success) {
-            quoteData = result.quote;
-            renderQuote();
-            initSignaturePad();
-        } else {
+        if (!result.success) {
             showAlert('error', result.message || 'Quote not found or expired.');
+            return;
         }
+
+        quoteData = result.quote;
+
+        const status = String(quoteData.status || '').toLowerCase();
+        const isExpired = status === 'expired' ||
+            (quoteData.validUntil && new Date(quoteData.validUntil) < new Date() && status !== 'accepted' && status !== 'declined');
+
+        if (isExpired) {
+            showAlert('error', 'This quote has expired. Please call us at (847) 443-1395 or email guttersnapp@gmail.com for an updated quote.');
+            return;
+        }
+        if (status === 'accepted') {
+            showAlert('success', 'You\'ve already signed this contract. Redirecting you to your receipt…');
+            setTimeout(() => { window.location.href = `/my-quote.html?id=${quoteData.quoteId}${linkToken ? '&t=' + linkToken : ''}`; }, 1200);
+            return;
+        }
+        if (status === 'declined') {
+            showAlert('error', 'This quote was previously declined. Please contact us if you\'d like to revisit it.');
+            return;
+        }
+
+        renderQuote();
+        initSignaturePad();
     } catch (error) {
         console.error('Error loading quote:', error);
         showAlert('error', 'Error loading quote. Please try again.');
@@ -224,7 +246,8 @@ acceptanceForm.addEventListener('submit', async (e) => {
                 selectedOption: selectedOption,
                 signatureData: signatureDataURL,
                 signedDate: new Date().toISOString(),
-                acceptedTerms: true
+                acceptedTerms: true,
+                t: linkToken
             })
         });
 

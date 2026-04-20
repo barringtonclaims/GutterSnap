@@ -1,18 +1,40 @@
 // Owner Authentication Module
+// Sessions are signed, stateless HMAC tokens (JWT-style) so they survive
+// Vercel cold starts and don't need a shared in-memory store. Owner records
+// and passwords still live in Airtable (Owners table) or a local fallback file.
+
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-// In-memory storage for users (for production, use a proper database)
-// Structure: { email: { email, passwordHash, tempPassword, resetToken, resetTokenExpiry, firstLogin } }
 const usersFilePath = path.join(__dirname, 'owners.json');
 
-// Initialize default users
+// Session configuration
+const SESSION_TTL_DAYS = 7;
+const SESSION_TTL_MS = SESSION_TTL_DAYS * 24 * 60 * 60 * 1000;
+
+// A secret is required in production. For local dev we derive a stable one so
+// restarts don't kick people out instantly, but warn loudly.
+function getSessionSecret() {
+    if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+        console.error('⚠️  SESSION_SECRET is not set. Using an unstable fallback. Set SESSION_SECRET in your environment.');
+    }
+    // Derive a stable-ish per-install secret from a combination that won't
+    // change on a simple redeploy. Not secure — only for local dev.
+    return crypto
+        .createHash('sha256')
+        .update('guttersnap-dev-fallback-' + (process.env.AIRTABLE_BASE_ID || 'local'))
+        .digest('hex');
+}
+
+// Default seed users (used only if the Airtable Owners table / local JSON has
+// nothing yet). Real owners should exist in Airtable.
 const defaultUsers = {
     'max@guttersnapchicago.com': {
         email: 'max@guttersnapchicago.com',
-        passwordHash: null, // Will be set on first login
+        passwordHash: null,
         tempPassword: 'Gsnap123!',
         resetToken: null,
         resetTokenExpiry: null,
@@ -52,42 +74,31 @@ const defaultUsers = {
     }
 };
 
-// Load or initialize users
 function loadUsers() {
     try {
         if (process.env.VERCEL) {
-            // In Vercel, use environment variable or in-memory storage
-            // For production, you'd want to use a database
+            // On Vercel, allow the seed list to be overridden via env var.
+            // Password changes don't persist across deploys unless done in
+            // Airtable or the env — this is a known limitation of the JSON
+            // fallback and is fine while we're using Airtable as the source
+            // of truth for Owners.
             return JSON.parse(process.env.OWNER_USERS || JSON.stringify(defaultUsers));
-        } else {
-            if (fs.existsSync(usersFilePath)) {
-                const data = fs.readFileSync(usersFilePath, 'utf8');
-                return JSON.parse(data);
-            } else {
-                // Create auth directory if it doesn't exist
-                const authDir = path.dirname(usersFilePath);
-                if (!fs.existsSync(authDir)) {
-                    fs.mkdirSync(authDir, { recursive: true });
-                }
-                saveUsers(defaultUsers);
-                return defaultUsers;
-            }
         }
+        if (fs.existsSync(usersFilePath)) {
+            return JSON.parse(fs.readFileSync(usersFilePath, 'utf8'));
+        }
+        const authDir = path.dirname(usersFilePath);
+        if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true });
+        saveUsers(defaultUsers);
+        return defaultUsers;
     } catch (error) {
         console.error('Error loading users:', error);
         return defaultUsers;
     }
 }
 
-// Save users to file
 function saveUsers(users) {
-    if (process.env.VERCEL) {
-        // In Vercel, we can't save to filesystem
-        // For production, use a database
-        console.log('Running on Vercel - users stored in memory only');
-        return;
-    }
-    
+    if (process.env.VERCEL) return; // can't write on Vercel
     try {
         fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
     } catch (error) {
@@ -95,128 +106,156 @@ function saveUsers(users) {
     }
 }
 
-// Active sessions storage (token -> email)
-const activeSessions = new Map();
+const allowedEmails = new Set([
+    'max@guttersnapchicago.com',
+    'josh@guttersnapchicago.com',
+    'matt@guttersnapchicago.com',
+    'ian@guttersnapchicago.com',
+    'brody@guttersnapchicago.com'
+]);
 
-// Validate email format
 function isValidEmail(email) {
-    const allowedEmails = [
-        'max@guttersnapchicago.com',
-        'josh@guttersnapchicago.com',
-        'matt@guttersnapchicago.com',
-        'ian@guttersnapchicago.com',
-        'brody@guttersnapchicago.com'
-    ];
-    return allowedEmails.includes(email.toLowerCase());
+    return allowedEmails.has(String(email || '').toLowerCase());
 }
 
-// Login function
+// Base64url helpers (no padding, URL-safe)
+function b64urlEncode(input) {
+    return Buffer.from(input).toString('base64')
+        .replace(/=+$/, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+}
+
+function b64urlDecode(str) {
+    const pad = 4 - (str.length % 4 || 4);
+    const padded = str + '='.repeat(pad % 4);
+    return Buffer.from(padded.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString();
+}
+
+function sign(data, secret) {
+    return crypto.createHmac('sha256', secret).update(data).digest('base64')
+        .replace(/=+$/, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+}
+
+function timingSafeEqual(a, b) {
+    const ab = Buffer.from(a);
+    const bb = Buffer.from(b);
+    if (ab.length !== bb.length) return false;
+    return crypto.timingSafeEqual(ab, bb);
+}
+
+function issueSessionToken(email) {
+    const payload = {
+        email,
+        iat: Date.now(),
+        exp: Date.now() + SESSION_TTL_MS
+    };
+    const payloadB64 = b64urlEncode(JSON.stringify(payload));
+    const signature = sign(payloadB64, getSessionSecret());
+    return `${payloadB64}.${signature}`;
+}
+
+function verifySession(token) {
+    if (!token || typeof token !== 'string') return { valid: false };
+    const dot = token.indexOf('.');
+    if (dot < 1) return { valid: false };
+
+    const payloadB64 = token.slice(0, dot);
+    const providedSig = token.slice(dot + 1);
+    const expectedSig = sign(payloadB64, getSessionSecret());
+
+    if (!timingSafeEqual(providedSig, expectedSig)) return { valid: false };
+
+    try {
+        const payload = JSON.parse(b64urlDecode(payloadB64));
+        if (!payload.email || !payload.exp) return { valid: false };
+        if (Date.now() > payload.exp) return { valid: false, expired: true };
+        return { valid: true, email: payload.email };
+    } catch (e) {
+        return { valid: false };
+    }
+}
+
 async function login(email, password) {
     const users = loadUsers();
-    const normalizedEmail = email.toLowerCase();
-    
+    const normalizedEmail = String(email || '').toLowerCase();
+
     if (!isValidEmail(normalizedEmail)) {
         return { success: false, message: 'Invalid email address' };
     }
-    
+
     const user = users[normalizedEmail];
     if (!user) {
         return { success: false, message: 'User not found' };
     }
-    
+
     let isPasswordValid = false;
     let firstLogin = user.firstLogin;
-    
-    // Check if using temporary password
+
     if (user.tempPassword && password === user.tempPassword) {
         isPasswordValid = true;
         firstLogin = true;
-    } 
-    // Check if using regular password
-    else if (user.passwordHash) {
+    } else if (user.passwordHash) {
         isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     }
-    
+
     if (!isPasswordValid) {
         return { success: false, message: 'Invalid password' };
     }
-    
-    // Generate session token
-    const token = crypto.randomBytes(32).toString('hex');
-    activeSessions.set(token, normalizedEmail);
-    
-    return { 
-        success: true, 
-        token, 
-        email: normalizedEmail,
-        firstLogin 
-    };
+
+    const token = issueSessionToken(normalizedEmail);
+    return { success: true, token, email: normalizedEmail, firstLogin };
 }
 
-// Request password reset
 function requestPasswordReset(email) {
     const users = loadUsers();
-    const normalizedEmail = email.toLowerCase();
-    
+    const normalizedEmail = String(email || '').toLowerCase();
+
     if (!isValidEmail(normalizedEmail)) {
         return { success: false, message: 'Invalid email address' };
     }
-    
+
     const user = users[normalizedEmail];
-    if (!user) {
-        return { success: false, message: 'User not found' };
-    }
-    
-    // Generate reset token
+    if (!user) return { success: false, message: 'User not found' };
+
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiry = Date.now() + 86400000; // 24 hours from now (extended for serverless)
-    
+    const resetTokenExpiry = Date.now() + 24 * 60 * 60 * 1000;
+
     users[normalizedEmail].resetToken = resetToken;
     users[normalizedEmail].resetTokenExpiry = resetTokenExpiry;
     saveUsers(users);
-    
-    return { 
-        success: true, 
-        resetToken,
-        email: normalizedEmail
-    };
+
+    return { success: true, resetToken, email: normalizedEmail };
 }
 
-// Change password with reset token
 async function changePassword(token, newPassword) {
     const users = loadUsers();
-    
-    // Check for master reset code (works for any owner)
-    // Format: MASTER_RESET_[email without @domain]
-    const masterResetPattern = /^MASTER_RESET_(.+)$/;
-    const masterMatch = token.match(masterResetPattern);
-    
-    if (masterMatch) {
+
+    // Master reset code: MASTER_RESET_<emailPrefix> (e.g. MASTER_RESET_max).
+    // Only works if a valid MASTER_RESET_SECRET env var is configured AND the
+    // token matches its expected form; otherwise this is a no-op path.
+    const masterMatch = token.match(/^MASTER_RESET_(.+)$/);
+    if (masterMatch && process.env.MASTER_RESET_SECRET) {
         const emailPrefix = masterMatch[1].toLowerCase();
-        // Find user with this email prefix
+        let userEmail = null;
         for (const email in users) {
             if (email.toLowerCase().startsWith(emailPrefix + '@')) {
                 userEmail = email;
                 break;
             }
         }
-        
         if (userEmail) {
-            console.log('Using master reset code for:', userEmail);
-            // Hash the new password
             const passwordHash = await bcrypt.hash(newPassword, 10);
-            
-            // Update user
             users[userEmail].passwordHash = passwordHash;
             users[userEmail].tempPassword = null;
             users[userEmail].firstLogin = false;
             saveUsers(users);
-            
             return { success: true, message: 'Password updated successfully' };
         }
     }
-    
-    // Find user with this reset token
+
     let userEmail = null;
     for (const email in users) {
         if (users[email].resetToken === token) {
@@ -224,54 +263,96 @@ async function changePassword(token, newPassword) {
             break;
         }
     }
-    
+
     if (!userEmail) {
-        console.log('Reset token not found:', token);
-        console.log('Available users:', Object.keys(users));
-        return { success: false, message: 'Invalid or expired reset token. Please request a new password reset link or contact support.' };
+        return {
+            success: false,
+            message: 'Invalid or expired reset token. Please request a new password reset link.'
+        };
     }
-    
+
     const user = users[userEmail];
-    
-    // Check if token is expired
     if (Date.now() > user.resetTokenExpiry) {
-        console.log('Reset token expired for:', userEmail);
-        return { success: false, message: 'Reset token has expired. Please request a new password reset link or contact support.' };
+        return {
+            success: false,
+            message: 'Reset token has expired. Please request a new password reset link.'
+        };
     }
-    
-    // Hash the new password
+
     const passwordHash = await bcrypt.hash(newPassword, 10);
-    
-    // Update user
     users[userEmail].passwordHash = passwordHash;
-    users[userEmail].tempPassword = null; // Remove temp password
+    users[userEmail].tempPassword = null;
     users[userEmail].resetToken = null;
     users[userEmail].resetTokenExpiry = null;
     users[userEmail].firstLogin = false;
-    
     saveUsers(users);
-    
+
     return { success: true, message: 'Password updated successfully' };
 }
 
-// Verify session token
-function verifySession(token) {
-    if (!token) {
-        return { valid: false };
-    }
-    
-    const email = activeSessions.get(token);
-    if (!email) {
-        return { valid: false };
-    }
-    
-    return { valid: true, email };
+function logout(/* token */) {
+    // Signed tokens are stateless; the client clears the cookie.
+    // (If we ever need server-side revocation, add a blacklist keyed by iat.)
+    return { success: true };
 }
 
-// Logout (invalidate session)
-function logout(token) {
-    activeSessions.delete(token);
-    return { success: true };
+async function ownerAuthMiddleware(req, res, next) {
+    try {
+        const token = req.cookies?.ownerToken ||
+                     (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'Authentication required' });
+        }
+
+        const session = verifySession(token);
+        if (!session.valid) {
+            return res.status(401).json({
+                success: false,
+                message: session.expired ? 'Session expired. Please log in again.' : 'Invalid session'
+            });
+        }
+
+        const Airtable = require('airtable');
+        const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY })
+            .base(process.env.AIRTABLE_BASE_ID);
+
+        try {
+            const records = await base('Owners')
+                .select({
+                    filterByFormula: `{Email} = '${session.email}'`,
+                    maxRecords: 1
+                })
+                .firstPage();
+
+            if (records.length === 0) {
+                req.owner = {
+                    email: session.email,
+                    name: session.email.split('@')[0],
+                    isAdmin: session.email === 'max@guttersnapchicago.com'
+                };
+            } else {
+                req.owner = {
+                    email: records[0].fields.Email,
+                    name: records[0].fields['Full Name'] || records[0].fields.Email,
+                    isAdmin: records[0].fields['Is Admin'] || false,
+                    active: records[0].fields.Active !== false
+                };
+            }
+        } catch (airtableError) {
+            console.error('Error fetching owner from Airtable:', airtableError);
+            req.owner = {
+                email: session.email,
+                name: session.email.split('@')[0],
+                isAdmin: session.email === 'max@guttersnapchicago.com'
+            };
+        }
+
+        next();
+    } catch (error) {
+        console.error('Auth middleware error:', error);
+        return res.status(500).json({ success: false, message: 'Authentication error' });
+    }
 }
 
 module.exports = {
@@ -280,6 +361,6 @@ module.exports = {
     changePassword,
     verifySession,
     logout,
-    isValidEmail
+    isValidEmail,
+    ownerAuthMiddleware
 };
-

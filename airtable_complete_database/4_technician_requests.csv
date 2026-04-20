@@ -1,0 +1,4 @@
+Request ID,Customer Name,Customer Email,Customer Phone,Property Address,Meeting Preference,Preferred Date,Preferred Time,Notes,Status,Scheduled Date,Scheduled Time,Created Date,Last Modified,Customer,Assigned Quote
+2001,Robert Chen,rchen@email.com,(773) 555-0301,"123 Pine St, Chicago IL 60602",Meet with Technician,2025-11-01,Morning (8-11am),3-story house needs careful inspection,New,,,2025-10-28T11:00:00Z,2025-10-28T11:00:00Z,,
+2002,Lisa Martinez,lmartinez@email.com,(630) 555-0402,"567 Maple Dr, Naperville IL 60540",No Meeting Required,,,Just need a quote - I'll be at work,Scheduled,2025-10-30,2:00 PM,2025-10-26T15:00:00Z,2025-10-27T10:00:00Z,,
+2003,David Kim,dkim@email.com,(847) 555-0503,"890 Birch Ln, Skokie IL 60077",Meet with Technician,2025-11-02,Afternoon (12-3pm),Concerned about ice dams last winter,Completed,2025-10-25,1:00 PM,2025-10-20T09:00:00Z,2025-10-25T14:00:00Z,,QT-789012

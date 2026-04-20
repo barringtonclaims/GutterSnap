@@ -244,7 +244,7 @@ function getFormData() {
         optionA: optionA,
         optionB: optionB,
         notes: document.getElementById('notes').value,
-        createdBy: sessionStorage.getItem('ownerEmail') || 'unknown',
+        createdBy: (window.__OWNER_EMAIL__ || localStorage.getItem('ownerEmail') || 'unknown'),
         createdDate: new Date().toISOString()
     };
 }
@@ -254,9 +254,8 @@ async function sendQuote(quoteData) {
     try {
         const response = await fetch('/api/quotes/create', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(quoteData)
         });
 
@@ -362,13 +361,21 @@ document.getElementById('saveDraftBtn').addEventListener('click', async () => {
 // Initial render
 renderQuote();
 
-// Check if user is logged in
-const ownerEmail = sessionStorage.getItem('ownerEmail');
-if (!ownerEmail) {
-    showAlert('error', 'You must be logged in to create quotes. Redirecting to login...');
-    setTimeout(() => {
-        window.location.href = 'ownerlogin.html';
-    }, 2000);
-}
+// Check if user is logged in — auth lives in an HTTP-only cookie now, so we
+// ask the server instead of reading sessionStorage.
+(async function checkAuth() {
+    try {
+        const res = await fetch('/api/owner/verify', { credentials: 'same-origin' });
+        if (!res.ok) throw new Error('Not authenticated');
+        const data = await res.json();
+        if (!data.success) throw new Error('Not authenticated');
+        window.__OWNER_EMAIL__ = data.owner.email;
+        localStorage.setItem('ownerEmail', data.owner.email);
+    } catch (e) {
+        showAlert('error', 'You must be logged in to create quotes. Redirecting to login…');
+        setTimeout(() => { window.location.href = 'ownerlogin.html'; }, 1500);
+    }
+})();
+
 
 

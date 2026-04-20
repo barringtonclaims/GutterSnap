@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your GutterSnap quote</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/logo.png">
+<style>
+    :root {
+        --brand: #EE9844;
+        --dark: #1a1a1a;
+        --muted: #6b7280;
+        --bg: #f6f7f9;
+        --surface: #ffffff;
+        --border: #e5e7eb;
+        --success: #16a34a;
+        --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        background: var(--bg);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: var(--dark);
+        line-height: 1.5;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 32px 16px 80px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 16px; }
+    .card-header { padding: 28px 28px 20px; border-bottom: 1px solid var(--border); }
+    .card-body { padding: 24px 28px; }
+    .brand-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .brand-row img { width: 40px; height: 40px; }
+    .brand-name { font-weight: 700; color: var(--brand); font-size: 20px; letter-spacing: -0.01em; }
+    h1 { margin: 0 0 4px; font-size: 24px; line-height: 1.25; }
+    .muted { color: var(--muted); font-size: 14px; }
+
+    .status-pill {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        margin-top: 8px;
+    }
+    .status-sent   { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .status-accepted { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .status-expired  { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .status-declined { background: #f3f4f6; color: #374151; border: 1px solid var(--border); }
+
+    .option {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        background: var(--surface);
+    }
+    .option-label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--brand); font-weight: 600; }
+    .option-blurb { color: var(--muted); font-size: 14px; margin: 4px 0 16px; }
+    .option-total { font-size: 28px; font-weight: 700; line-height: 1; }
+    .option-sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+
+    .btn {
+        display: inline-block;
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 15px;
+        text-align: center;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+    .btn-primary  { background: var(--brand); color: #fff; }
+    .btn-primary:hover { filter: brightness(.95); }
+    .btn-ghost    { background: transparent; color: var(--dark); border-color: var(--border); }
+
+    ul.scope { margin: 12px 0 0; padding-left: 18px; font-size: 14px; color: #374151; }
+    ul.scope li { padding: 4px 0; }
+
+    .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+    .banner {
+        padding: 14px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+    .banner-info   { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .banner-warn   { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .banner-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+    .loading, .error-state, .empty-state {
+        text-align: center;
+        padding: 48px 24px;
+        color: var(--muted);
+    }
+
+    .contact {
+        text-align: center;
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 24px;
+    }
+    .contact a { color: var(--brand); text-decoration: none; font-weight: 600; }
+
+    @media (max-width: 600px) {
+        .wrap { padding: 16px 12px 60px; }
+        .card-header, .card-body { padding: 20px 16px; }
+        h1 { font-size: 20px; }
+        .option-total { font-size: 24px; }
+    }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div id="content" class="loading">Loading your quote…</div>
+</div>
+
+<script>
+(async function () {
+    const content = document.getElementById('content');
+    const params = new URLSearchParams(window.location.search);
+    const quoteId = params.get('id');
+    const token   = params.get('t');
+
+    if (!quoteId) {
+        content.outerHTML = renderError('No quote ID in link.', 'Please use the link from your email, or call us at (847) 443-1395.');
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/quotes/${encodeURIComponent(quoteId)}`);
+        const data = await res.json();
+
+        if (!data.success) {
+            content.outerHTML = renderError('Quote not found.', data.message || 'Double-check the link, or reach out and we can resend it.');
+            return;
+        }
+
+        renderQuote(data.quote);
+    } catch (err) {
+        console.error(err);
+        content.outerHTML = renderError('Connection error.', 'Please try again in a moment.');
+    }
+
+    function money(n) {
+        return '$' + Number(n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function statusPill(status) {
+        const s = String(status || '').toLowerCase();
+        if (s === 'accepted') return '<span class="status-pill status-accepted">Accepted</span>';
+        if (s === 'expired')  return '<span class="status-pill status-expired">Expired</span>';
+        if (s === 'declined') return '<span class="status-pill status-declined">Declined</span>';
+        return '<span class="status-pill status-sent">Open</span>';
+    }
+
+    function scopeList(option, m) {
+        const items = [];
+        if (option === 'A') {
+            if (m.firstFloor)  items.push(`GutterSnap protection on ${m.firstFloor} ft of 1st-floor gutters`);
+            if (m.secondFloor) items.push(`GutterSnap protection on ${m.secondFloor} ft of 2nd-floor gutters`);
+            if (m.thirdFloor)  items.push(`GutterSnap protection on ${m.thirdFloor} ft of 3rd-floor gutters`);
+        } else {
+            if (m.firstFloor)  items.push(`Replace ${m.firstFloor} ft of 1st-floor gutters + install GutterSnap`);
+            if (m.secondFloor) items.push(`Replace ${m.secondFloor} ft of 2nd-floor gutters + install GutterSnap`);
+            if (m.thirdFloor)  items.push(`Replace ${m.thirdFloor} ft of 3rd-floor gutters + install GutterSnap`);
+            if (m.downspoutFeet) items.push(`${m.downspoutFeet} ft of new downspouts`);
+            if (m.endCaps)    items.push(`${m.endCaps} sealed end caps`);
+            if (m.miters)     items.push(`${m.miters} miter joints`);
+        }
+        items.push('Full cleanup, system testing, 30-year warranty');
+        return '<ul class="scope">' + items.map(i => `<li>${i}</li>`).join('') + '</ul>';
+    }
+
+    function acceptUrl(quote, option) {
+        const p = new URLSearchParams();
+        p.set('id', quote.quoteId);
+        p.set('option', option);
+        if (token) p.set('t', token);
+        return '/accept-quote-enhanced.html?' + p.toString();
+    }
+
+    function renderError(title, detail) {
+        return `<div class="card">
+            <div class="card-body">
+                <div class="brand-row">
+                    <img src="/logo.png" alt="GutterSnap">
+                    <span class="brand-name">GutterSnap</span>
+                </div>
+                <div class="error-state">
+                    <h1 style="margin-bottom:8px;">${title}</h1>
+                    <p class="muted">${detail}</p>
+                    <p class="contact" style="margin-top:24px;">Call <a href="tel:8474431395">(847) 443-1395</a> or email <a href="mailto:guttersnapp@gmail.com">guttersnapp@gmail.com</a></p>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function renderQuote(q) {
+        const validDate = q.validUntil ? new Date(q.validUntil).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) : '';
+        const status = String(q.status || '').toLowerCase();
+        const isTerminal = status === 'accepted' || status === 'declined';
+        const isExpired = status === 'expired' || (q.validUntil && new Date(q.validUntil) < new Date() && !isTerminal);
+        const hasA = q.optionA && q.measurements && q.measurements.retrofitPossible;
+
+        let banner = '';
+        if (status === 'accepted') {
+            banner = `<div class="banner banner-info">
+                You accepted this quote on ${q.acceptedDate ? new Date(q.acceptedDate).toLocaleDateString() : 'file'}.
+                <a href="/api/quotes/contract-pdf/${q.quoteId}" target="_blank">View signed contract →</a>
+            </div>`;
+        } else if (status === 'declined') {
+            banner = `<div class="banner banner-warn">You previously declined this quote. If you've changed your mind, just call or email us.</div>`;
+        } else if (isExpired) {
+            banner = `<div class="banner banner-danger">This quote has expired. Pricing may have changed — reach out for an updated version.</div>`;
+        }
+
+        const optionsHtml = (isExpired || isTerminal) ? '' : `
+            ${hasA ? renderOption(q, 'A', 'Option A — Protection only', 'Keep your gutters. Add the GutterSnap protection system.') : ''}
+            ${renderOption(q, 'B', hasA ? 'Option B — Full replacement' : 'Your recommended package', hasA
+                ? 'New commercial-grade gutters + GutterSnap protection. Complete, warrantied system.'
+                : 'Complete system replacement for best results.')}
+        `;
+
+        const bodyHtml = `
+        <div class="card">
+            <div class="card-header">
+                <div class="brand-row">
+                    <img src="/logo.png" alt="GutterSnap">
+                    <span class="brand-name">GutterSnap</span>
+                </div>
+                <h1>Your custom quote</h1>
+                <div class="muted">Quote #${q.quoteId} • ${q.customer.address}${validDate ? ' • valid through ' + validDate : ''}</div>
+                ${statusPill(q.status)}
+            </div>
+            <div class="card-body">
+                ${banner}
+                ${optionsHtml || `<p class="muted">This quote is currently ${status}. Give us a call if you'd like to revisit it.</p>`}
+                <div class="divider"></div>
+                <p style="margin:0 0 8px;"><strong>Included with every install</strong></p>
+                <ul class="scope">
+                    <li>30-year transferable warranty</li>
+                    <li>Licensed and insured certified technicians</li>
+                    <li>Free first-year maintenance inspection</li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="contact">
+            Questions? Call <a href="tel:8474431395">(847) 443-1395</a> or reply to your quote email.
+        </p>`;
+
+        document.getElementById('content').outerHTML = bodyHtml;
+    }
+
+    function renderOption(q, label, title, blurb) {
+        const opt = label === 'A' ? q.optionA : q.optionB;
+        if (!opt || !opt.total) return '';
+        const url = acceptUrl(q, label === 'A' ? 'optionA' : 'optionB');
+        return `<div class="option">
+            <div class="option-label">${title}</div>
+            <div class="option-blurb">${blurb}</div>
+            <div class="option-total">${money(opt.total)}</div>
+            <div class="option-sub">Total investment, includes tax and materials.</div>
+            <a href="${url}" class="btn btn-primary">Review &amp; accept →</a>
+            ${scopeList(label, q.measurements || {})}
+        </div>`;
+    }
+})();
+</script>
+</body>
+</html>

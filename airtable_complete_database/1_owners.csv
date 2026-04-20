@@ -1,0 +1,7 @@
+Email,Full Name,Active,Temp Password,Reset Token,Reset Token Expiry,First Login,Created Date,Notes
+max@guttersnapchicago.com,Max McCaulley,TRUE,,,,,Admin owner
+josh@guttersnapchicago.com,Josh [LastName],TRUE,Gsnap123!,,,TRUE,,
+matt@guttersnapchicago.com,Matt [LastName],TRUE,Gsnap123!,,,TRUE,,
+ian@guttersnapchicago.com,Ian [LastName],TRUE,Gsnap123!,,,TRUE,,
+brody@guttersnapchicago.com,Brody [LastName],TRUE,Gsnap123!,,,TRUE,,
+

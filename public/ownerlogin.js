@@ -21,22 +21,26 @@ const alertContainer = document.getElementById('alertContainer');
 const resetAlertContainer = document.getElementById('resetAlertContainer');
 const changeAlertContainer = document.getElementById('changeAlertContainer');
 
-// Check if user is already logged in
-window.addEventListener('DOMContentLoaded', () => {
-    const token = sessionStorage.getItem('ownerToken');
-    const userEmail = sessionStorage.getItem('ownerEmail');
-    
-    if (token && userEmail) {
-        showDashboard(userEmail);
-    }
-
-    // Check for password reset token in URL
+// Check if user is already logged in — the session now lives in an HTTP-only
+// cookie, so we ask the server.
+window.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const resetToken = urlParams.get('token');
-    
+
     if (resetToken) {
         showChangePasswordForm(resetToken);
+        return;
     }
+
+    try {
+        const res = await fetch('/api/owner/verify', { credentials: 'same-origin' });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.owner) {
+                showDashboard(data.owner.email);
+            }
+        }
+    } catch (_) { /* not logged in */ }
 });
 
 // Show/Hide Forms
@@ -84,20 +88,17 @@ loginForm.addEventListener('submit', async (e) => {
     try {
         const response = await fetch('/api/owner-login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
             body: JSON.stringify({ email, password })
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
-            // Store session
-            sessionStorage.setItem('ownerToken', data.token);
-            sessionStorage.setItem('ownerEmail', email);
-            
-            // Go directly to dashboard (no password reset notification)
+            // Server set an HTTP-only session cookie; we only keep a tiny
+            // display hint in localStorage for instant UI paint.
+            localStorage.setItem('ownerEmail', email);
             showDashboard(email);
         } else {
             showAlert(alertContainer, 'error', data.message || 'Invalid email or password');
@@ -210,13 +211,13 @@ changePasswordForm.addEventListener('submit', async (e) => {
 });
 
 // Logout
-logoutBtn.addEventListener('click', () => {
-    sessionStorage.removeItem('ownerToken');
-    sessionStorage.removeItem('ownerEmail');
-    
+logoutBtn.addEventListener('click', async () => {
+    try {
+        await fetch('/api/owner/logout', { method: 'POST', credentials: 'same-origin' });
+    } catch (_) { /* ignore */ }
+    localStorage.removeItem('ownerEmail');
     dashboard.classList.remove('active');
     loginScreen.style.display = 'flex';
-    
     loginForm.reset();
     clearAlert(alertContainer);
 });
@@ -224,8 +225,8 @@ logoutBtn.addEventListener('click', () => {
 // Change Password from Dashboard
 changePasswordLink.addEventListener('click', async (e) => {
     e.preventDefault();
-    
-    const email = sessionStorage.getItem('ownerEmail');
+
+    const email = localStorage.getItem('ownerEmail');
     if (!email) return;
     
     try {
@@ -252,13 +253,8 @@ changePasswordLink.addEventListener('click', async (e) => {
 
 // Helper Functions
 function showDashboard(email) {
-    loginScreen.style.display = 'none';
-    dashboard.classList.add('active');
-    
-    // Personalize welcome message
-    const name = email.split('@')[0];
-    const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
-    document.getElementById('welcomeMessage').textContent = `Welcome back, ${capitalizedName}!`;
+    // Redirect to the new CRM dashboard
+    window.location.href = '/dashboard.html';
 }
 
 function showChangePasswordForm(token) {

@@ -1,0 +1,11 @@
+Item Name,Item Code,Category,Unit Type,Price,Floor Level,Active,Notes
+Protection - 1st Floor,PROT_1F,Protection,Per Foot,28.00,1st Floor,TRUE,Material and labor for protection installation on first floor
+Protection - 2nd Floor,PROT_2F,Protection,Per Foot,38.00,2nd Floor,TRUE,Material and labor for protection installation on second floor
+Protection - 3rd Floor,PROT_3F,Protection,Per Foot,48.00,3rd Floor,TRUE,Material and labor for protection installation on third floor
+Gutter Install - 1st Floor,GUTTER_1F,Gutter Install,Per Foot,22.00,1st Floor,TRUE,Material and labor for new gutter installation on first floor
+Gutter Install - 2nd Floor,GUTTER_2F,Gutter Install,Per Foot,27.00,2nd Floor,TRUE,Material and labor for new gutter installation on second floor
+Gutter Install - 3rd Floor,GUTTER_3F,Gutter Install,Per Foot,37.00,3rd Floor,TRUE,Material and labor for new gutter installation on third floor
+Downspouts,DOWNSPOUT,Downspouts,Per Foot,20.00,N/A,TRUE,Material and labor for downspout installation per linear foot
+End Cap,ENDCAP,Hardware,Per Unit,20.00,N/A,TRUE,Material and labor per end cap unit
+Miter,MITER,Hardware,Per Unit,25.00,N/A,TRUE,Material and labor per miter unit
+

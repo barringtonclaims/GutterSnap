@@ -1,0 +1,128 @@
+AIRTABLE FIELD TYPE REFERENCE
+=============================
+
+This is a complete reference for setting up field types after CSV import.
+
+TABLE: Owners
+-------------
+Email                  → Email
+Full Name              → Single line text
+Active                 → Checkbox
+Temp Password          → Single line text
+Reset Token            → Single line text
+Reset Token Expiry     → Date
+First Login            → Checkbox
+Created Date           → Created time
+Notes                  → Long text
+
+TABLE: Pricing Configuration
+----------------------------
+Item Name              → Single line text
+Item Code              → Single line text
+Category               → Single select
+  Options: Protection, Gutter Install, Downspouts, Hardware
+Unit Type              → Single select
+  Options: Per Foot, Per Unit, Flat Rate
+Price                  → Currency
+Floor Level            → Single select
+  Options: 1st Floor, 2nd Floor, 3rd Floor, N/A
+Active                 → Checkbox
+Notes                  → Long text
+
+TABLE: Self Inspection Requests
+-------------------------------
+Request ID             → Autonumber
+Customer Name          → Single line text
+Customer Email         → Email
+Customer Phone         → Phone number
+Property Address       → Long text
+Notes                  → Long text
+Inspection Type        → Single select
+  Options: Self-Inspection
+Status                 → Single select
+  Options: New, Reviewing, Quote Sent, Archived
+Created Date           → Created time
+Last Modified          → Last modified time
+Photo - Front          → URL
+Photo - Front Right Corner → URL
+Photo - Right Side     → URL
+Photo - Rear Right Corner → URL
+Photo - Rear          → URL
+Photo - Rear Left Corner → URL
+Photo - Left Side     → URL
+Photo - Left Front Corner → URL
+Photo - Gutter Swatch → URL
+Customer              → Link to another record (Customers)
+Assigned Quote        → Link to another record (Quotes)
+
+TABLE: Technician Requests
+--------------------------
+Request ID             → Autonumber
+Customer Name          → Single line text
+Customer Email         → Email
+Customer Phone         → Phone number
+Property Address       → Long text
+Meeting Preference     → Single select
+  Options: Meet with Technician, No Meeting Required
+Preferred Date         → Date
+Preferred Time         → Single select
+  Options: Morning (8-11am), Afternoon (12-3pm), Evening (4-7pm)
+Notes                  → Long text
+Status                 → Single select
+  Options: New, Scheduled, Completed, Quote Sent, Archived
+Scheduled Date         → Date
+Scheduled Time         → Single line text
+Created Date           → Created time
+Last Modified          → Last modified time
+Customer              → Link to another record (Customers)
+Assigned Quote         → Link to another record (Quotes)
+
+TABLE: Quotes
+-------------
+Quote ID               → Single line text
+Customer Name          → Single line text
+Customer Email         → Email
+Customer Phone         → Phone number
+Property Address       → Long text
+1st Floor Feet         → Number
+2nd Floor Feet         → Number
+3rd Floor Feet         → Number
+Downspout Feet         → Number
+End Cap Count          → Number
+Miter Count            → Number
+Retrofit Possible      → Checkbox
+Option A - Protection 1F Cost → Formula (see README)
+Option A - Protection 2F Cost → Formula (see README)
+Option A - Protection 3F Cost → Formula (see README)
+Option A - Subtotal    → Formula (see README)
+Option A - Tax         → Formula (see README)
+Option A - Total       → Formula (see README)
+Option B - Protection 1F Cost → Formula (see README)
+Option B - Protection 2F Cost → Formula (see README)
+Option B - Protection 3F Cost → Formula (see README)
+Option B - Gutter Install 1F Cost → Formula (see README)
+Option B - Gutter Install 2F Cost → Formula (see README)
+Option B - Gutter Install 3F Cost → Formula (see README)
+Option B - Downspouts Cost → Formula (see README)
+Option B - End Caps Cost → Formula (see README)
+Option B - Miters Cost → Formula (see README)
+Option B - Subtotal    → Formula (see README)
+Option B - Tax         → Formula (see README)
+Option B - Total       → Formula (see README)
+Status                 → Single select
+  Options: Draft, Sent, Viewed, Accepted, Declined, Expired
+Customer Selection     → Single select
+  Options: Option A, Option B
+Created By             → Link to another record (Owners)
+Sent Date              → Date
+Valid Until            → Date
+Accepted Date          → Date
+Viewed Count           → Number
+Last Viewed            → Date
+Signature Image        → URL
+Contract PDF           → URL
+Accepted Terms         → Checkbox
+Internal Notes         → Long text
+Related Request Type   → Single select
+  Options: Self Inspection Request, Technician Request
+Related Request ID     → Single line text

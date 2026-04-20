@@ -1,6 +1,11 @@
 node_modules
 .env
-uploads
+.env.local
+.env.*.local
+uploads/
 .vercel
 auth/owners.json
 quotes/quotes.json
+server.log
+*.log
+.DS_Store

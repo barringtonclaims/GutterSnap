@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - GutterSnap Chicago</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: #f8f8f8;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #FFF5ED 0%, #ffffff 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .dashboard-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-branding {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .dashboard-logo {
+            width: 50px;
+            height: 50px;
+        }
+
+        .dashboard-brand-name {
+            font-size: 1.8rem;
+            color: #EE9844;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .dashboard-header h1 {
+            color: #1a1a1a;
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .dashboard-header .owner-info {
+            text-align: right;
+            color: #666;
+        }
+
+        .nav-icons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .nav-icon {
+            padding: 10px 20px;
+            background: #EE9844;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(238, 152, 68, 0.2);
+        }
+
+        .nav-icon:hover {
+            background: #D17A2F;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(238, 152, 68, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .nav-icon {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #EE9844;
+            border-bottom-color: #EE9844;
+        }
+
+        .tab:hover {
+            color: #EE9844;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .customer-cards {
+            display: grid;
+            gap: 20px;
+        }
+
+        .customer-card {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+
+        .customer-card:hover {
+            border-color: #EE9844;
+            box-shadow: 0 4px 16px rgba(238, 152, 68, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .customer-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .customer-info h3 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+            font-size: 20px;
+        }
+
+        .customer-info p {
+            margin: 3px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .customer-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.photo {
+            background: #FFF5ED;
+            color: #EE9844;
+        }
+
+        .badge.status {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .badge.priority-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .badge.priority-medium {
+            background: #FFF5ED;
+            color: #EE9844;
+        }
+
+        .badge.priority-low {
+            background: #f1f8e9;
+            color: #558b2f;
+        }
+
+        .customer-details {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+        }
+
+        .quote-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .quote-option {
+            flex: 1;
+            padding: 10px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+
+        .quote-option strong {
+            display: block;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .quote-option .price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #EE9844;
+            color: white;
+            box-shadow: 0 2px 6px rgba(238, 152, 68, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: #D17A2F;
+            box-shadow: 0 4px 12px rgba(238, 152, 68, 0.35);
+        }
+
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.25);
+        }
+
+        .btn-success:hover {
+            background: #388E3C;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.35);
+        }
+
+        .btn-warning {
+            background: #EE9844;
+            color: white;
+            box-shadow: 0 2px 6px rgba(238, 152, 68, 0.25);
+        }
+
+        .btn-warning:hover {
+            background: #D17A2F;
+            box-shadow: 0 4px 12px rgba(238, 152, 68, 0.35);
+        }
+
+        .btn-secondary {
+            background: #666;
+            color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #EE9844;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .admin-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        /* Mobile Responsiveness */
+            @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 10px;
+            }
+            
+            .dashboard-header {
+                padding: 20px;
+            }
+            
+            .dashboard-header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .dashboard-header .owner-info {
+                text-align: left;
+            }
+            
+            .dashboard-branding {
+                justify-content: center;
+            }
+            
+            .dashboard-brand-name {
+                font-size: 1.5rem;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 1.25rem;
+                text-align: center;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            
+            .tab {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            .customer-card {
+                padding: 15px;
+            }
+            
+            .customer-card-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .customer-badges {
+                justify-content: flex-start;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .quote-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="dashboard-header-content">
+                <div>
+                    <div class="dashboard-branding">
+                        <img src="logo.png" alt="GutterSnap Logo" class="dashboard-logo">
+                        <div class="dashboard-brand-name">GutterSnap<sup style="font-size: 0.6em;">™</sup></div>
+                    </div>
+                    <h1>Owner Dashboard</h1>
+                    <div class="nav-icons">
+                        <button class="nav-icon" title="Home" onclick="window.location.href='/'">🏠 Home</button>
+                        <button class="nav-icon" title="Quote Calculator" onclick="window.location.href='/quote-calculator.html'">💰 Calculator</button>
+                        <button class="nav-icon" title="Quote History" onclick="window.location.href='/quote-history.html'">📋 History</button>
+                        <button class="nav-icon admin-only" title="Settings" onclick="showSettings()" style="display: none;">⚙️ Settings</button>
+                    </div>
+                </div>
+                <div class="owner-info">
+                    <p style="font-size: 18px; font-weight: 600; margin-bottom: 5px;"><span id="ownerName">Loading...</span></p>
+                    <p id="ownerEmail" style="font-size: 14px; color: #888; margin-bottom: 15px;"></p>
+                    <button onclick="logout()" style="padding: 10px 20px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.15);" onmouseover="this.style.background='#555'" onmouseout="this.style.background='#666'">Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="leads">
+                Leads
+                <span id="leadsCount" class="badge status" style="margin-left: 8px;">0</span>
+            </button>
+            <button class="tab" data-tab="jobs">
+                Approved Jobs
+                <span id="jobsCount" class="badge status" style="margin-left: 8px;">0</span>
+            </button>
+        </div>
+
+        <div id="leadsTab" class="tab-content active">
+            <div id="leadsLoading" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading leads...</p>
+            </div>
+            <div id="leadsContainer" class="customer-cards" style="display: none;"></div>
+            <div id="leadsEmpty" class="empty-state" style="display: none;">
+                <h3>No leads yet</h3>
+                <p>New customer requests will appear here.</p>
+            </div>
+        </div>
+
+        <div id="jobsTab" class="tab-content">
+            <div id="jobsLoading" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading jobs...</p>
+            </div>
+            <div id="jobsContainer" class="customer-cards" style="display: none;"></div>
+            <div id="jobsEmpty" class="empty-state" style="display: none;">
+                <h3>No approved jobs yet</h3>
+                <p>Accepted quotes will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Modal -->
+    <div id="assignModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reassign Customer</h2>
+                <button class="close-modal" onclick="closeAssignModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Select Owner:</label>
+                <select id="assignOwnerSelect">
+                    <option value="">Loading owners...</option>
+                </select>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="confirmAssignment()">Reassign</button>
+                <button class="btn btn-secondary" onclick="closeAssignModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Modal -->
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Schedule Technician Visit</h2>
+                <button class="close-modal" onclick="closeScheduleModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Date:</label>
+                <input type="date" id="scheduleDate" required>
+            </div>
+            <div class="form-group">
+                <label>Time:</label>
+                <input type="time" id="scheduleTime">
+            </div>
+            <div class="form-group">
+                <label>Notes:</label>
+                <textarea id="scheduleNotes" placeholder="Any special instructions..."></textarea>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-success" onclick="confirmSchedule()">Schedule</button>
+                <button class="btn btn-secondary" onclick="closeScheduleModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
+
