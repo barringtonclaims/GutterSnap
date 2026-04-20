@@ -1,10 +1,22 @@
 // Airtable Service - Handles all Airtable database operations
 const Airtable = require('airtable');
 
-// Initialize Airtable
-const base = new Airtable({
-    apiKey: process.env.AIRTABLE_API_KEY
-}).base(process.env.AIRTABLE_BASE_ID);
+// Lazy Airtable init. We used to build the base at module-load time, which
+// crashed the entire serverless function with FUNCTION_INVOCATION_FAILED the
+// moment a required env var was missing — even for requests that didn't touch
+// Airtable (like serving a static file or answering /health). Deferring the
+// init lets the app boot cleanly and fail per-request with a readable error.
+let _base = null;
+function base(tableName) {
+    if (!_base) {
+        const apiKey = process.env.AIRTABLE_API_KEY;
+        const baseId = process.env.AIRTABLE_BASE_ID;
+        if (!apiKey) throw new Error('AIRTABLE_API_KEY is not set. Configure it in the environment (Vercel → Project → Settings → Environment Variables).');
+        if (!baseId) throw new Error('AIRTABLE_BASE_ID is not set. Configure it in the environment (Vercel → Project → Settings → Environment Variables).');
+        _base = new Airtable({ apiKey }).base(baseId);
+    }
+    return _base(tableName);
+}
 
 // Table names
 const TABLES = {

@@ -313,34 +313,37 @@ async function ownerAuthMiddleware(req, res, next) {
             });
         }
 
-        const Airtable = require('airtable');
-        const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY })
-            .base(process.env.AIRTABLE_BASE_ID);
-
+        // Enrich the request with owner data from Airtable, but degrade
+        // gracefully if Airtable isn't reachable / configured. Auth itself
+        // only depends on the signed cookie, so a missing Airtable config
+        // shouldn't block logged-in users from using the site.
         try {
-            const records = await base('Owners')
-                .select({
-                    filterByFormula: `{Email} = '${session.email}'`,
-                    maxRecords: 1
-                })
-                .firstPage();
+            if (process.env.AIRTABLE_API_KEY && process.env.AIRTABLE_BASE_ID) {
+                const Airtable = require('airtable');
+                const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY })
+                    .base(process.env.AIRTABLE_BASE_ID);
 
-            if (records.length === 0) {
-                req.owner = {
-                    email: session.email,
-                    name: session.email.split('@')[0],
-                    isAdmin: session.email === 'max@guttersnapchicago.com'
-                };
-            } else {
-                req.owner = {
-                    email: records[0].fields.Email,
-                    name: records[0].fields['Full Name'] || records[0].fields.Email,
-                    isAdmin: records[0].fields['Is Admin'] || false,
-                    active: records[0].fields.Active !== false
-                };
+                const records = await base('Owners')
+                    .select({
+                        filterByFormula: `{Email} = '${session.email}'`,
+                        maxRecords: 1
+                    })
+                    .firstPage();
+
+                if (records.length > 0) {
+                    req.owner = {
+                        email: records[0].fields.Email,
+                        name: records[0].fields['Full Name'] || records[0].fields.Email,
+                        isAdmin: records[0].fields['Is Admin'] || false,
+                        active: records[0].fields.Active !== false
+                    };
+                }
             }
         } catch (airtableError) {
             console.error('Error fetching owner from Airtable:', airtableError);
+        }
+
+        if (!req.owner) {
             req.owner = {
                 email: session.email,
                 name: session.email.split('@')[0],
