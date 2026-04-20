@@ -654,12 +654,15 @@ async function acceptQuote(quoteId, acceptanceData) {
             acceptedDate = new Date().toISOString().split('T')[0];
         }
 
+        // Note: in the live Airtable base, "Accepted Terms" and "Accepted Date"
+        // are text fields (not a checkbox / date), so we write strings. If the
+        // schema is ever normalized these will still be accepted.
         const record = await base(TABLES.QUOTES).update(records[0].id, {
             'Status': 'Accepted',
             'Customer Selection': acceptanceData.selectedOption === 'optionA' ? 'Option A' : 'Option B',
             'Accepted Date': acceptedDate,
             'Signature Image': acceptanceData.signatureData || '',
-            'Accepted Terms': true
+            'Accepted Terms': acceptanceData.acceptedTerms ? 'Yes' : 'No'
         });
 
         return {
